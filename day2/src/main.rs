@@ -1,4 +1,5 @@
 use std::{convert::Infallible, str::FromStr};
+use std::cmp::Ordering;
 use utils::split_lines;
 
 #[derive(PartialEq, Eq, Debug, Clone, Copy)]
@@ -18,6 +19,22 @@ impl FromStr for RPS {
             "C" | "Z" => Ok(RPS::Scissors),
             _ => panic!("Failed to parse RPS state {}", s),
         }
+    }
+}
+
+impl PartialOrd for RPS {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(match (self, other) {
+            (RPS::Paper, RPS::Rock) |
+            (RPS::Scissors, RPS::Paper) |
+            (RPS::Rock, RPS::Scissors) => Ordering::Greater,
+            (RPS::Rock, RPS::Paper) |
+            (RPS::Paper, RPS::Scissors) |
+            (RPS::Scissors, RPS::Rock) => Ordering::Less,
+            (RPS::Rock, RPS::Rock) |
+            (RPS::Paper, RPS::Paper) |
+            (RPS::Scissors, RPS::Scissors) => Ordering::Equal
+        })
     }
 }
 
@@ -68,8 +85,8 @@ fn shape_score(r: RPS) -> u32 {
 fn score_rps(theirs: RPS, mine: RPS) -> u32 {
     (match (theirs, mine) {
         (x, y) if x == y => 3,
-        (x, y) if x == wins_against(y) => 0,
-        (x, y) if y == wins_against(x) => 6,
+        (x, y) if x > y => 0,
+        (x, y) if x < y => 6,
         (x, y) => panic!("Unkown RPS battle {:?} vs {:?}", x, y),
     }) + shape_score(mine)
 }
