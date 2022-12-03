@@ -9,7 +9,15 @@ pub fn lines(filename: &str) -> impl Iterator<Item = String> {
 }
 
 pub fn split_lines(filename: &str) -> impl Iterator<Item = Vec<String>> {
-    lines(filename).filter(|s| !s.is_empty()).map(|s| s.split_whitespace().map(|str| String::from(str)).collect())
+    lines(filename)
+        .filter(|s| !s.is_empty())
+        .map(|s| s.split_whitespace().map(|str| String::from(str)).collect())
+}
+
+pub fn char_lines(filename: &str) -> impl Iterator<Item = Vec<char>> {
+    lines(filename)
+        .filter(|s| !s.is_empty())
+        .map(|s| s.chars().collect())
 }
 
 pub fn string_lines(s: &str) -> impl Iterator<Item = String> + '_ {
@@ -19,5 +27,13 @@ pub fn string_lines(s: &str) -> impl Iterator<Item = String> + '_ {
 
 pub fn string_split_lines(s: &str) -> impl Iterator<Item = Vec<String>> + '_ {
     println!("{}", s);
-    string_lines(s).filter(|s| !s.is_empty()).map(|s| s.split_whitespace().map(|f| String::from(f)).collect())
+    string_lines(s)
+        .filter(|s| !s.is_empty())
+        .map(|s| s.split_whitespace().map(|f| String::from(f)).collect())
+}
+
+pub fn string_char_lines(s: &str) -> impl Iterator<Item = Vec<char>> + '_ {
+    string_lines(s)
+        .filter(|s| !s.is_empty())
+        .map(|s| s.chars().collect())
 }
