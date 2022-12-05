@@ -49,4 +49,47 @@ pub fn string_split_lines_sep(s: &str, sep: char) -> impl Iterator<Item = Vec<St
         .filter(|s| !s.is_empty())
         .map(move |s| s.split(sep).map(|str| String::from(str)).collect())
 }
+
+pub fn str_between<'a>(line: &'a str, left: Option<&str>, right: Option<&str>) -> &'a str {
+    let left_offset = left
+        .map(|s| line.find(s).expect("Could not find left separator") + s.len())
+        .unwrap_or(0);
+    let right_offset = right
+        .map(|s| line.find(s).expect("Could not find right separator"))
+        .unwrap_or(line.len());
+    &line[left_offset..right_offset]
+}
+
+pub fn num_between(line: &str, left: Option<&str>, right: Option<&str>) -> u32 {
+    str_between(line, left, right).parse::<u32>().expect(
+        format!(
+            "Could not parse num between '{:?}' and '{:?}' in line {}",
+            left, right, line
+        )
+        .as_str(),
+    )
+}
+
+#[cfg(test)]
+mod test {
+    use crate::num_between;
+
+    #[test]
+    fn test_num_between_simple() {
+        let result = num_between("move 1 from 2 to 3", Some("move "), Some(" from "));
+        assert_eq!(result, 1);
+    }
+
+    #[test]
+    fn test_num_between_simple_2() {
+        let result = num_between("move 1 from 2 to 3", Some("from "), Some(" to "));
+        assert_eq!(result, 2);
+    }
+
+    #[test]
+    fn test_num_between_to_end() {
+        let result = num_between("move 1 from 2 to 3", Some(" to "), None);
+        assert_eq!(result, 3);
+    }
     
+}

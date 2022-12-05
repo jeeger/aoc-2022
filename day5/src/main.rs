@@ -1,7 +1,7 @@
 #![feature(iter_array_chunks)]
 #![feature(map_many_mut)]
 use std::collections::HashMap;
-use utils::lines;
+use utils::{lines, num_between};
 
 type BoxConfig = HashMap<u32, Vec<char>>;
 
@@ -67,11 +67,9 @@ fn parse_box_config(lines: Vec<String>) -> BoxConfig {
 fn parse_orders(lines: Vec<String>) -> Vec<Order> {
     let mut result = Vec::new();
     for line in lines {
-        let from_index = line.find(" from ").unwrap();
-        let to_index = line.find(" to ").unwrap();
-        let count: u32 = line[5..from_index].parse().unwrap();
-        let from_col: u32 = line[from_index + 6..to_index].parse().unwrap();
-        let to_col: u32 = line[to_index + 4..line.len()].parse().unwrap();
+        let count: u32 = num_between(&line, Some("move "), Some(" from"));
+        let from_col: u32 = num_between(&line, Some("from "), Some(" to"));
+        let to_col: u32 = num_between(&line, Some("to "), None);
         result.push(Order::new(count, from_col, to_col));
     }
     return result;
