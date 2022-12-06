@@ -1,17 +1,18 @@
 #![feature(iter_array_chunks)]
-#![feature(map_many_mut)]
 use std::collections::HashMap;
 use utils::{lines, num_between};
 
 type BoxConfig = HashMap<u32, Vec<char>>;
 
 fn apply_order(cfg: &mut BoxConfig, o: Order, do_rev: bool) {
-    let [from_vec, to_vec] = cfg.get_many_mut([&o.from_col, &o.to_col]).expect("Invalid order");
-    let drain = from_vec.drain(0..(o.count as usize));
+    let from_vec = cfg.get_mut(&o.from_col).expect("Invalid from column");
+    let mut drain: Vec<char> = from_vec.drain(0..(o.count as usize)).collect();
     if do_rev {
-        drain.rev().for_each(|b| to_vec.insert(0, b))
-    } else {
-        drain.for_each(|b| to_vec.insert(0, b))
+        drain.reverse();
+    }
+    let to_vec = cfg.get_mut(&o.to_col).expect("Invalid to column");
+    for c in drain {
+        to_vec.insert(0, c);
     }
 }
 
