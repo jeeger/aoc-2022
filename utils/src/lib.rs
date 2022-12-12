@@ -1,17 +1,18 @@
-mod pointmap;
-mod point;
 mod parsing;
-pub use pointmap::{PointMap, PointMappable, LookDirection};
-pub use point::Point;
+mod point;
+mod pointmap;
 pub use parsing::*;
+pub use point::Point;
+pub use pointmap::{LookDirection, PointMap, PointMappable};
 
 #[macro_use]
 extern crate lazy_static;
 
 #[cfg(test)]
 mod test {
-    use crate::{num_between, string_lines,
-                LookDirection, Point, PointMap, PointMappable};
+    use std::collections::HashSet;
+
+    use crate::{num_between, string_lines, LookDirection, Point, PointMap, PointMappable};
 
     #[test]
     fn test_num_between_simple() {
@@ -88,6 +89,24 @@ mod test {
     }
 
     #[test]
+    fn test_adjacent_points() {
+        let m = vec![vec![1, 2, 3], vec![4, 5, 6], vec![7, 8, 9]];
+        assert_eq!(
+            m.adjacent_points(&Point::new(1, 1)),
+            HashSet::from([
+                Point::new(1, 0),
+                Point::new(1, 2),
+                Point::new(0, 1),
+                Point::new(2, 1)
+            ])
+        );
+        assert_eq!(
+            m.adjacent_points(&Point::new(0, 0)),
+            HashSet::from([Point::new(1, 0), Point::new(0, 1)])
+        );
+    }
+
+    #[test]
     fn test_all_points() {
         let m: PointMap = vec![
             vec![3, 0, 3, 7, 3],
@@ -101,10 +120,10 @@ mod test {
 
     #[test]
     fn test_adjacent() {
-        assert!(Point::new(1, 0).adjacent(&Point::new(2, 0)));
-        assert!(Point::new(1, 0).adjacent(&Point::new(1, 1)));
-        assert!(Point::new(1, 0).adjacent(&Point::new(0, 0)));
-        assert!(Point::new(1, 1).adjacent(&Point::new(1, 0)));
-        assert!(!Point::new(1, 1).adjacent(&Point::new(3, 1)));
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(2, 0)));
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(1, 1)));
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(0, 0)));
+        assert!(Point::new(1, 1).is_adjacent(&Point::new(1, 0)));
+        assert!(!Point::new(1, 1).is_adjacent(&Point::new(3, 1)));
     }
 }

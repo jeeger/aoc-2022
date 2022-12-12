@@ -14,7 +14,7 @@ impl Point {
         Point { x, y }
     }
 
-    pub fn adjacent(&self, other: &Self) -> bool {
+    pub fn is_adjacent(&self, other: &Self) -> bool {
         let (xdist, ydist) = self.vec_dist(other);
         xdist <= 1 && xdist >= -1 && ydist <= 1 && ydist >= -1
     }
