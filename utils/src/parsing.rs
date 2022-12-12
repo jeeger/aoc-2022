@@ -60,8 +60,8 @@ pub fn str_between<'a>(line: &'a str, left: Option<&str>, right: Option<&str>) -
     &line[left_offset..right_offset]
 }
 
-pub fn num_between(line: &str, left: Option<&str>, right: Option<&str>) -> u32 {
-    str_between(line, left, right).parse::<u32>().expect(
+pub fn num_between(line: &str, left: Option<&str>, right: Option<&str>) -> i32 {
+    str_between(line, left, right).parse::<i32>().expect(
         format!(
             "Could not parse num between '{:?}' and '{:?}' in line {}",
             left, right, line

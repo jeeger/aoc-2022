@@ -12,7 +12,7 @@ fn visible_from(data: &PointMap, p: &Point, look_direction: &LookDirection) -> b
 fn is_visible(data: &PointMap, p: &Point) -> bool {
     let sizex = data[0].len();
     let sizey = data.len();
-    if p.x == 0 || p.y == 0 || p.x == (sizex - 1) || p.y == (sizey - 1) {
+    if p.x == 0 || p.y == 0 || p.x == (sizex - 1).try_into().unwrap() || p.y == (sizey - 1).try_into().unwrap() {
         return true;
     };
     for d in [

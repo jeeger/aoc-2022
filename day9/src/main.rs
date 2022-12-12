@@ -35,7 +35,7 @@ impl FromStr for Step {
             "L" => MoveDirection::Left,
             _ => panic!("Unknown direction."),
         };
-        Ok(Step::new(direction, count))
+        Ok(Step::new(direction, count.try_into().unwrap()))
     }
 }
 

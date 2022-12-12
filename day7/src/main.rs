@@ -39,7 +39,7 @@ fn parse_directory(lines: &mut impl Iterator<Item = String>) -> HashMap<String, 
             line if line.starts_with("$ ls") => {}
             line => {
                 let size = num_between(&line, None, Some(" "));
-                increase_size(&mut result, current_path_str, size);
+                increase_size(&mut result, current_path_str, size.try_into().unwrap());
             }
         }
     }

@@ -68,9 +68,9 @@ fn parse_box_config(lines: Vec<String>) -> BoxConfig {
 fn parse_orders(lines: Vec<String>) -> Vec<Order> {
     let mut result = Vec::new();
     for line in lines {
-        let count: u32 = num_between(&line, Some("move "), Some(" from"));
-        let from_col: u32 = num_between(&line, Some("from "), Some(" to"));
-        let to_col: u32 = num_between(&line, Some("to "), None);
+        let count: u32 = num_between(&line, Some("move "), Some(" from")).try_into().unwrap();
+        let from_col: u32 = num_between(&line, Some("from "), Some(" to")).try_into().unwrap();
+        let to_col: u32 = num_between(&line, Some("to "), None).try_into().unwrap();
         result.push(Order::new(count, from_col, to_col));
     }
     return result;
