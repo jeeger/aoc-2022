@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::BufRead;
 use std::io::BufReader;
 use std::io::Cursor;
+use regex::Regex;
 
 pub fn lines(filename: &str) -> impl Iterator<Item = String> {
     let r = BufReader::new(File::open(filename).expect("Failed to open file"));
@@ -68,4 +69,15 @@ pub fn num_between(line: &str, left: Option<&str>, right: Option<&str>) -> i32 {
         )
         .as_str(),
     )
+}
+
+pub fn numbers_on_line(line: &str) -> Vec<isize> {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"-?\d+").unwrap();
+    };
+    let mut result = Vec::new();
+    for m in RE.captures_iter(line) {
+        result.push(m[0].parse::<isize>().unwrap());
+    };
+    result
 }

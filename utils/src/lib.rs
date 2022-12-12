@@ -5,6 +5,9 @@ pub use pointmap::{PointMap, PointMappable, LookDirection};
 pub use point::Point;
 pub use parsing::*;
 
+#[macro_use]
+extern crate lazy_static;
+
 #[cfg(test)]
 mod test {
     use crate::{num_between, string_lines,
