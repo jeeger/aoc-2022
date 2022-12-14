@@ -40,6 +40,12 @@ impl Point {
     }
 }
 
+impl From<(isize, isize)> for Point {
+    fn from(value: (isize, isize)) -> Self {
+        Point::new(value.0, value.1)
+    }
+}
+
 impl Add for Point {
     type Output = Self;
 
