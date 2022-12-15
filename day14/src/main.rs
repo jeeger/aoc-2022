@@ -8,12 +8,8 @@ use nom::{
     sequence::{separated_pair, terminated},
     IResult,
 };
-use std::{
-    cmp::{max, min},
-    collections::HashMap,
-    fs::read_to_string,
-};
-use utils::Point;
+use std::fs::read_to_string;
+use utils::{Point, SparseMap};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum SpaceType {
@@ -22,90 +18,64 @@ enum SpaceType {
     Empty,
 }
 
-struct GroundMap {
-    min_x: isize,
-    max_x: isize,
-    min_y: isize,
-    max_y: isize,
-    map: HashMap<Point, SpaceType>,
+impl Default for SpaceType {
+    fn default() -> Self {
+        Self::Empty
+    }
 }
 
-fn point_range<'a>(p1: &'a Point, p2: &'a Point) -> Box<dyn Iterator<Item = Point> + 'a> {
-    if p1.x != p2.x && p1.y != p2.y {
-        panic!("Can only generate orthogonal ranges!");
-    };
-    if p1.x == p2.x {
-        Box::new((min(p1.y, p2.y)..max(p1.y, p2.y) + 1).map(|y| Point::new(p1.x, y)))
-    } else {
-        Box::new((min(p1.x, p2.x)..max(p1.x, p2.x) + 1).map(|x| Point::new(x, p1.y)))
-    }
+struct GroundMap {
+    map: SparseMap<SpaceType>,
 }
 
 impl GroundMap {
     fn new() -> Self {
         GroundMap {
-            min_x: isize::MAX,
-            max_x: isize::MIN,
-            min_y: isize::MAX,
-            max_y: isize::MIN,
-            map: HashMap::new(),
+            map: SparseMap::new(),
         }
     }
 
-    fn at(&self, p: &Point) -> SpaceType {
-        *self.map.get(p).unwrap_or(&SpaceType::Empty)
-    }
-
     fn bounds(&self) -> (Point, Point) {
-        (
-            Point::new(self.min_x, self.min_y),
-            Point::new(self.max_x, self.max_y),
-        )
-    }
-
-    fn put_rock(&mut self, p: &Point) {
-        self.min_x = min(p.x, self.min_x);
-        self.max_x = max(p.x, self.max_x);
-        self.min_y = min(p.y, self.min_y);
-        self.max_y = max(p.y, self.max_y);
-        self.map.insert(*p, SpaceType::Rock);
+        self.map.bounds()
     }
 
     fn add_rock_between(&mut self, p1: &Point, p2: &Point) {
-        for path_point in point_range(p1, p2) {
-            self.put_rock(&path_point);
+        for path_point in p1.orthogonal_range(&p2) {
+            self.map.put(&path_point, SpaceType::Rock);
         }
     }
 
     fn has_left(&self, p: &Point) -> bool {
-        p.x < self.min_x || p.x > self.max_x || p.y > self.max_y
+        let (pmin, pmax) = self.map.bounds();
+        p.x < pmin.x || p.x > pmax.x || p.y > pmax.y
     }
 
     fn put_sand(&mut self, p: &Point) {
         // Only complain when putting sand outside the map borders to the left, right and bottom
         if self.has_left(p) {
             panic!(
-                "Trying to put sand at {:?}, outside map bounds {},{}, {}, {}",
-                p, self.min_x, self.min_y, self.max_x, self.max_y
+                "Trying to put sand at {:?}, outside map bounds {:?}",
+                p,
+                self.map.bounds()
             )
         }
         if self.is_solid(p) {
             panic!(
                 "Trying to put sand at {:?}, where there is already {:?}",
                 p,
-                self.at(p)
+                self.map.at(p)
             );
         }
-        self.map.insert(*p, SpaceType::Sand);
+        self.map.put(p, SpaceType::Sand);
     }
 
     fn is_solid(&self, p: &Point) -> bool {
-        let t = *self.map.get(p).unwrap_or(&SpaceType::Empty);
+        let t = self.map.at(p);
         t == SpaceType::Rock || t == SpaceType::Sand
     }
 
     fn is_empty(&self, p: &Point) -> bool {
-        !self.map.contains_key(p)
+        self.map.is_empty(p)
     }
 }
 
@@ -137,7 +107,10 @@ fn construct_map(rock: Vec<Vec<(u32, u32)>>) -> GroundMap {
 fn construct_map_solution2(rock: Vec<Vec<(u32, u32)>>) -> GroundMap {
     let mut result = construct_map(rock);
     let floor_y = result.bounds().1.y + 2;
-    result.add_rock_between(&Point::new(500 - floor_y, floor_y), &Point::new(500 + floor_y, floor_y));
+    result.add_rock_between(
+        &Point::new(500 - floor_y, floor_y),
+        &Point::new(500 + floor_y, floor_y),
+    );
     result
 }
 
@@ -203,7 +176,10 @@ fn solution2(input: &str) -> u32 {
 mod test {
     use utils::Point;
 
-    use crate::{construct_map, drop_sand, parse_input, parse_line, solution1, solution2, construct_map_solution2};
+    use crate::{
+        construct_map, construct_map_solution2, drop_sand, parse_input, parse_line, solution1,
+        solution2,
+    };
 
     const TEST_STRING: &str = r"498,4 -> 498,6 -> 496,6
 503,4 -> 502,4 -> 502,9 -> 494,9
@@ -290,6 +266,7 @@ fn main() {
         "Solution 1: {}",
         solution1(&read_to_string("input.txt").unwrap())
     );
+    // Should be 23610
     println!(
         "Solution 2: {}",
         solution2(&read_to_string("input.txt").unwrap())

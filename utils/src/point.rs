@@ -1,3 +1,5 @@
+use std::cmp::max;
+use std::cmp::min;
 use std::ops::Add;
 use std::ops::AddAssign;
 use std::ops::Sub;
@@ -38,6 +40,19 @@ impl Point {
         self.x = ((self.x as i32) + xdiff) as isize;
         self.y = ((self.y as i32) + ydiff) as isize;
     }
+
+    pub fn orthogonal_range<'a>(self: &'a Point, p2: &'a Point) -> Box<dyn Iterator<Item = Point> + 'a> {
+    if self.x != p2.x && self.y != p2.y {
+        panic!("Can only generate orthogonal ranges!");
+    };
+    if self.x == p2.x {
+        Box::new((min(self.y, p2.y)..max(self.y, p2.y) + 1).map(|y| Point::new(self.x, y)))
+    } else {
+        Box::new((min(self.x, p2.x)..max(self.x, p2.x) + 1).map(|x| Point::new(x, self.y)))
+    }
+}
+
+
 }
 
 impl From<(isize, isize)> for Point {

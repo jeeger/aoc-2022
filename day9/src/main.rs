@@ -59,7 +59,7 @@ fn one_closer_to_zero(v: i32) -> i32 {
 
 fn adjust(h_pos: &Point, mut t_pos: Point) -> Point {
        // Already adjacent, no adjustment needed.
-    if h_pos.adjacent(&t_pos) {
+    if h_pos.is_adjacent(&t_pos) {
         return t_pos;
     };
     let (xdist, ydist) = h_pos.vec_dist(&t_pos);
@@ -88,7 +88,7 @@ fn adjust(h_pos: &Point, mut t_pos: Point) -> Point {
 }
 
 fn single_step(d: &MoveDirection, mut h_pos: Point, t_pos: Point) -> (Point, Point) {
-    if !h_pos.adjacent(&t_pos) {
+    if !h_pos.is_adjacent(&t_pos) {
         panic!("Head and tail are not adjacent before step.");
     };
     match d {
@@ -101,7 +101,7 @@ fn single_step(d: &MoveDirection, mut h_pos: Point, t_pos: Point) -> (Point, Poi
 }
 
 fn step_rope(d: &MoveDirection, mut h_pos: Point, mut tails: Vec<Point>) -> (Point, Vec<Point>) {
-    if !h_pos.adjacent(&tails[0]) {
+    if !h_pos.is_adjacent(&tails[0]) {
         panic!("Head and first tail are not adjacent before step.");
     };
     match d {

@@ -1,9 +1,11 @@
 mod parsing;
 mod point;
 mod pointmap;
+mod sparsemap;
 pub use parsing::*;
 pub use point::Point;
 pub use pointmap::{LookDirection, PointMap, PointMappable};
+pub use sparsemap::*;
 
 #[macro_use]
 extern crate lazy_static;
@@ -125,5 +127,52 @@ mod test {
         assert!(Point::new(1, 0).is_adjacent(&Point::new(0, 0)));
         assert!(Point::new(1, 1).is_adjacent(&Point::new(1, 0)));
         assert!(!Point::new(1, 1).is_adjacent(&Point::new(3, 1)));
+    }
+
+    #[test]
+    fn test_point_range() {
+        let p1 = Point::new(10, 20);
+        let p2 = Point::new(15, 20);
+        let p3 = Point::new(10, 23);
+        assert_eq!(
+            p1.orthogonal_range(&p2).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(11, 20),
+                Point::new(12, 20),
+                Point::new(13, 20),
+                Point::new(14, 20),
+                Point::new(15, 20)
+            ]
+        );
+        assert_eq!(
+            p2.orthogonal_range(&p1).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(11, 20),
+                Point::new(12, 20),
+                Point::new(13, 20),
+                Point::new(14, 20),
+                Point::new(15, 20)
+            ]
+        );
+        assert_eq!(
+            p1.orthogonal_range(&p3).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(10, 21),
+                Point::new(10, 22),
+                Point::new(10, 23),
+            ]
+        );
+        assert_eq!(
+            p3.orthogonal_range(&p1).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(10, 21),
+                Point::new(10, 22),
+                Point::new(10, 23),
+            ]
+        );
     }
 }
