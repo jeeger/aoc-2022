@@ -41,18 +41,31 @@ impl Point {
         self.y = ((self.y as i32) + ydiff) as isize;
     }
 
-    pub fn orthogonal_range<'a>(self: &'a Point, p2: &'a Point) -> Box<dyn Iterator<Item = Point> + 'a> {
-    if self.x != p2.x && self.y != p2.y {
-        panic!("Can only generate orthogonal ranges!");
-    };
-    if self.x == p2.x {
-        Box::new((min(self.y, p2.y)..max(self.y, p2.y) + 1).map(|y| Point::new(self.x, y)))
-    } else {
-        Box::new((min(self.x, p2.x)..max(self.x, p2.x) + 1).map(|x| Point::new(x, self.y)))
+    pub fn orthogonal_range<'a>(
+        self: &'a Point,
+        p2: &'a Point,
+    ) -> Box<dyn Iterator<Item = Point> + 'a> {
+        if self.x != p2.x && self.y != p2.y {
+            panic!("Can only generate orthogonal ranges!");
+        };
+        if self.x == p2.x {
+            Box::new((min(self.y, p2.y)..max(self.y, p2.y) + 1).map(|y| Point::new(self.x, y)))
+        } else {
+            Box::new((min(self.x, p2.x)..max(self.x, p2.x) + 1).map(|x| Point::new(x, self.y)))
+        }
     }
-}
 
-
+    pub fn points_at_dist<'a>(&'a self, d: isize) -> Box<dyn Iterator<Item = Point> + 'a> {
+        Box::new((0..d + 1)
+            .flat_map(move |offset| {
+                vec![
+                    Point::new(self.x + offset, self.y + (d - offset)),
+                    Point::new(self.x - offset, self.y - (d - offset)),
+                    Point::new(self.x + offset, self.y - (d - offset)),
+                    Point::new(self.x - offset, self.y + (d - offset)),
+                ]
+            }))
+    }
 }
 
 impl From<(isize, isize)> for Point {
@@ -94,5 +107,94 @@ impl SubAssign for Point {
     fn sub_assign(&mut self, rhs: Self) {
         self.x = self.x - rhs.x;
         self.y = self.y - rhs.y;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use std::collections::HashSet;
+
+    use crate::Point;
+
+    #[test]
+    fn test_adjacent() {
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(2, 0)));
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(1, 1)));
+        assert!(Point::new(1, 0).is_adjacent(&Point::new(0, 0)));
+        assert!(Point::new(1, 1).is_adjacent(&Point::new(1, 0)));
+        assert!(!Point::new(1, 1).is_adjacent(&Point::new(3, 1)));
+    }
+
+    #[test]
+    fn test_point_range() {
+        let p1 = Point::new(10, 20);
+        let p2 = Point::new(15, 20);
+        let p3 = Point::new(10, 23);
+        assert_eq!(
+            p1.orthogonal_range(&p2).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(11, 20),
+                Point::new(12, 20),
+                Point::new(13, 20),
+                Point::new(14, 20),
+                Point::new(15, 20)
+            ]
+        );
+        assert_eq!(
+            p2.orthogonal_range(&p1).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(11, 20),
+                Point::new(12, 20),
+                Point::new(13, 20),
+                Point::new(14, 20),
+                Point::new(15, 20)
+            ]
+        );
+        assert_eq!(
+            p1.orthogonal_range(&p3).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(10, 21),
+                Point::new(10, 22),
+                Point::new(10, 23),
+            ]
+        );
+        assert_eq!(
+            p3.orthogonal_range(&p1).collect::<Vec<Point>>(),
+            vec![
+                Point::new(10, 20),
+                Point::new(10, 21),
+                Point::new(10, 22),
+                Point::new(10, 23),
+            ]
+        );
+    }
+
+    #[test]
+    fn test_points_at_dist() {
+        assert_eq!(
+            Point::new(0, 0).points_at_dist(1).collect::<HashSet<Point>>(),
+            HashSet::from([
+                Point::new(-1, 0),
+                Point::new(1, 0),
+                Point::new(0, 1),
+                Point::new(0, -1)
+            ])
+        );
+        assert_eq!(
+            Point::new(0, 0).points_at_dist(2).collect::<HashSet<Point>>(),
+            HashSet::from([
+                Point::new(-2, 0),
+                Point::new(-1, -1),
+                Point::new(0, -2),
+                Point::new(1, -1),
+                Point::new(2, 0),
+                Point::new(1, 1),
+                Point::new(0, 2),
+                Point::new(-1, 1)
+            ])
+        );
     }
 }
