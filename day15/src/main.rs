@@ -1,21 +1,15 @@
-#![allow(dead_code, unused_variables, unused_imports)]
 extern crate nom;
 
 use nom::{
     bytes::complete::tag,
     character::complete::{i32, newline},
     combinator::map,
-    multi::{many1, separated_list1},
-    sequence::{preceded, separated_pair, terminated, tuple},
+    multi::separated_list1,
+    sequence::{preceded, tuple},
     IResult,
 };
 use rayon::prelude::*;
-use std::{
-    cmp::{max, min},
-    collections::{HashMap, HashSet},
-    fs::read_to_string,
-    ops::Range,
-};
+use std::{collections::HashSet, fs::read_to_string};
 use utils::{Point, SparseMap};
 
 #[derive(Eq, PartialEq, Clone, Copy, Debug)]
@@ -136,10 +130,6 @@ fn solution1(input: &str, row: i32) -> u32 {
     result
 }
 
-fn permissible(ni: &NegativeBeaconInfo, tocheck: &Point) -> bool {
-    ni.sensor_pos.dist(tocheck) > ni.dist
-}
-
 fn solution2(input: &str, bounds: isize) -> isize {
     let all_info = parse_input(input).unwrap().1;
     let mut negative_info: Vec<NegativeBeaconInfo> = Vec::new();
@@ -151,20 +141,29 @@ fn solution2(input: &str, bounds: isize) -> isize {
             dist: bi.sensor_pos.dist(&bi.beacon_pos),
         });
     }
-    let possible_points: HashSet<Point> = negative_info.par_iter().flat_map(|ni| {
-                ni.sensor_pos.points_at_dist((ni.dist + 1).try_into().unwrap())
-                .filter(|p| p.x >= 0 && p.x <= bounds && p.y >= 0 && p.y <= bounds).collect::<HashSet<Point>>()
-    }).collect();
-    let result = possible_points.par_iter().find_any(|p| {
-        negative_info.iter().all(|ni| ni.sensor_pos.dist(p) > ni.dist)
-    }).expect("No result found.");
-    return result.x * 4000000 + result.y;
+    let possible_points: HashSet<Point> = negative_info
+        .par_iter()
+        .flat_map(|ni| {
+            ni.sensor_pos
+                .points_at_dist((ni.dist + 1).try_into().unwrap())
+                .filter(|p| p.x >= 0 && p.x <= bounds && p.y >= 0 && p.y <= bounds)
+                .filter(|p| beacon_map.is_empty(p))
+                .collect::<HashSet<Point>>()
+        })
+        .collect();
+    let result = possible_points
+        .par_iter()
+        .find_any(|p| {
+            negative_info
+                .iter()
+                .all(|ni| ni.sensor_pos.dist(p) > ni.dist)
+        })
+        .expect("No result found.");
+    result.x * 4000000 + result.y
 }
 
 #[cfg(test)]
 mod test {
-    use utils::Point;
-
     use crate::{parse_beacon_info, parse_input, solution1, solution2, BeaconInfo};
 
     const TEST_STRING: &str = r"Sensor at x=2, y=18: closest beacon is at x=-2, y=15
