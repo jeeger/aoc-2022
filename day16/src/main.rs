@@ -152,8 +152,6 @@ impl<'a> MaxPressureCalculator<'a> {
         }
         let mut highest_pressure = 0;
         if remaining_time > 1 {
-            let mut next_opened = opened.clone();
-            next_opened.insert(pos);
             for next in &self.nodes {
                 if next == pos {
                     continue;
@@ -170,8 +168,14 @@ impl<'a> MaxPressureCalculator<'a> {
                             cache,
                         ),
                     );
-                } 
-                if !opened.contains(pos) && remaining_time > distance_to_next && self.pressures.get(pos).unwrap_or(&0) > &0 {
+                }
+                if !opened.contains(pos)
+                    && remaining_time > distance_to_next
+                    && self.pressures.get(pos).unwrap_or(&0) > &0
+                {
+                    let mut next_opened = opened.clone();
+                    next_opened.insert(pos);
+
                     let pressure_with_opened_valve = self.get_maximum_released_pressure_from(
                         next,
                         remaining_time - distance_to_next - 1,
@@ -184,9 +188,10 @@ impl<'a> MaxPressureCalculator<'a> {
                     );
                 }
                 if !opened.contains(pos) {
-                highest_pressure = max(
-                    highest_pressure,
-                    self.pressures.get(pos).unwrap_or(&0) * (remaining_time - 1));
+                    highest_pressure = max(
+                        highest_pressure,
+                        self.pressures.get(pos).unwrap_or(&0) * (remaining_time - 1),
+                    );
                 }
             }
         }
@@ -214,7 +219,8 @@ fn solution2(_input: &str) -> isize {
 #[cfg(test)]
 mod test {
     use crate::{
-        distances_and_pressures, parse_edge, parse_input, solution1, solution2, Edge, MaxPressureCalculator,
+        distances_and_pressures, parse_edge, parse_input, solution1, solution2, Edge,
+        MaxPressureCalculator,
     };
     use std::collections::HashSet;
 
@@ -292,8 +298,7 @@ Valve JJ has flow rate=21; tunnel leads to valve II";
         let parsed = parse_input(TEST_STRING).unwrap().1;
         let (distances, pressures) = distances_and_pressures(&parsed);
         let mut calculator = MaxPressureCalculator::new(pressures, distances);
-        assert_eq!(calculator.get_maximum_released_pressure("AA", 30),
-                   1651);
+        assert_eq!(calculator.get_maximum_released_pressure("AA", 30), 1651);
     }
 
     #[test]

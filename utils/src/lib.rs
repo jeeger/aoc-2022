@@ -2,10 +2,12 @@ mod parsing;
 mod point;
 mod pointmap;
 mod sparsemap;
+mod line;
 pub use parsing::*;
 pub use point::Point;
 pub use pointmap::{LookDirection, PointMap, PointMappable};
 pub use sparsemap::*;
+pub use line::*;
 
 #[macro_use]
 extern crate lazy_static;

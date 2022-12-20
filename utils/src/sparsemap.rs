@@ -1,6 +1,6 @@
 use std::cmp::{max, min};
-use std::fmt::Debug;
 use std::collections::HashMap;
+use std::fmt::{Debug, Display};
 
 use crate::Point;
 
@@ -12,8 +12,9 @@ pub struct SparseMap<T> {
     map: HashMap<Point, T>,
 }
 
-impl <T> SparseMap<T> where
-    T: Debug + Default + Copy
+impl<T> SparseMap<T>
+where
+    T: Debug + Default + Copy,
 {
     pub fn new() -> Self {
         Self {
@@ -47,5 +48,28 @@ impl <T> SparseMap<T> where
     pub fn is_empty(&self, p: &Point) -> bool {
         !self.map.contains_key(p)
     }
+
+    pub fn not_empty(&self, p: &Point) -> bool {
+        self.map.contains_key(p)
+    }
 }
 
+impl<T> Display for SparseMap<T>
+where
+    T: Debug + Copy + Default,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let (pmin, pmax) = self.bounds();
+        for y in (pmin.y..=pmax.y).rev() {
+            for x in pmin.x..=pmax.x {
+                if self.not_empty(&Point::new(x, y)) {
+                    write!(f, "#")?;
+                } else {
+                    write!(f, ".")?;
+                }
+            }
+            write!(f, "\n")?;
+        }
+        Ok(())
+    }
+}
